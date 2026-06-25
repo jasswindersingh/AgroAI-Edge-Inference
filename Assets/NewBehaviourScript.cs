@@ -63,7 +63,18 @@ public class NewBehaviourScript : MonoBehaviour
     // --- INDIAN AGRO METRIC TRANSLATION MAPS ---
     private string[] diseaseClasses = { "diseased", "healthy" };
     private string[] cropClasses = { "cotton", "jute", "maize", "rice", "wheat" };
-    private string[] treeClasses = { "banyan", "eucalyptus", "mango", "neem", "teak" };
+    
+    // --- EXPANDED 48 ALPHABETICAL FLORA CLASSES FROM ONNX TRAINING DATASETS ---
+    private string[] treeClasses = {
+        "Aloevera", "Amla", "Amruthaballi", "Arali", "ashoka", "Astma_weed",
+        "Badipala", "Balloon_Vine", "Bamboo", "Beans", "Betel", "Bhrami",
+        "Caricature", "Castor", "Catharanthus", "Chakte", "Chilly", "Citron lime (herelikai)",
+        "Common rue(naagdalli)", "Coriander", "Curry", "Doddpathre", "Drumstick", "Ekka",
+        "Eucalyptus", "Gasagase", "Ginger", "Globe Amarnath", "Guava", "Henna",
+        "Hibiscus", "Honge", "Insulin", "Jackfruit", "Jasmine", "Kambajala",
+        "Kasambruga", "Lemon", "Malabar_Spinach", "Mango", "Marigold", "Mint",
+        "Neem", "Nelavembu", "Rose", "Seethaashoka", "Tomato", "Turmeric"
+    };
 
     void Start()
     {
@@ -92,7 +103,6 @@ public class NewBehaviourScript : MonoBehaviour
         }
     }
 
-   
     private void ExecuteSoilTabularInference()
     {
         if (soilDiagnosticOutputText == null) return;
@@ -128,6 +138,7 @@ public class NewBehaviourScript : MonoBehaviour
                                         $"<b>💡 OPTIMAL TARGET SPECIFICATION:</b>\n" +
                                         $"This land composition matches conditions for growing: <color=#FFF><b>{recommendedCropClasses[targetIdx].ToUpper()}</b></color>.";
     }
+
     private void CaptureAndRunVisionInference()
     {
         int size = 224;
@@ -167,7 +178,12 @@ public class NewBehaviourScript : MonoBehaviour
             int idx = CalculateArgMax(outputScores);
             idx = Mathf.Clamp(idx, 0, treeClasses.Length - 1);
             
-            treeOutputText.text = $"<b>FLORA SPECIES:</b>\n<color=#FFD700><size=32>{treeClasses[idx].ToUpper()}</size></color>\n\n" +
+            // Clean up syntax characters from raw folder string syntax mapping
+            string rawName = treeClasses[idx];
+            string cleanName = rawName.Replace("_", " ");
+            if (cleanName.Contains("(")) cleanName = cleanName.Split('(')[0].Trim();
+            
+            treeOutputText.text = $"<b>FLORA SPECIES:</b>\n<color=#FFD700><size=32>{cleanName.ToUpper()}</size></color>\n\n" +
                                    $"<b>ECOLOGICAL MATCH VALUE:</b> {outputScores[idx]*100:F1}%";
         }
     }
@@ -183,7 +199,6 @@ public class NewBehaviourScript : MonoBehaviour
         }
     }
 
-   
     public void ShowHubWindow() { currentActiveMode = 0; RouteUIPanels(true, false, false, false, false); StopVisionCoroutine(); }
     public void ShowSoilProfilerWindow() { currentActiveMode = 1; RouteUIPanels(false, true, false, false, false); StopVisionCoroutine(); }
     public void ShowDiseaseWindow() { currentActiveMode = 2; RouteUIPanels(false, false, true, false, false); LaunchVisionLoop("Analyzing crop foliage health..."); }
