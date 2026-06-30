@@ -4,8 +4,6 @@ Obj/
 Logs/
 UserSettings/
 MemoryCaptures/
-Build/
-Builds/
 .vs/
 .gradle/
 *.csproj
